@@ -1,14 +1,9 @@
 import random
+from fastapi import FastAPI
+import uvicorn
+app = FastAPI()
 
 valid_arg = ['ROCK', 'PAPER', 'SCISSORS', 'LIZARD', 'SPOCK']
-
-def get_user_choice():
-    while True:
-        user_choice = str(input("Please choose, rock, paper, scissors, lizard, spock: ")).upper()
-        if validate_user_choice(user_choice):
-            return user_choice
-        else:
-            print("Invalid choice, please input again...")
 
 def validate_user_choice(user_choice):
     return user_choice in valid_arg
@@ -33,16 +28,20 @@ def determine_winner(user_choice, comp_choice):
     else:
         return "The winner is: computer"
 
-def main():
-    user_choice = get_user_choice()
-    comp_choice = get_computer_choice()
+@app.post("/play")
+def play_game(user_choice: str):
+    if validate_user_choice(user_choice):
+        comp_choice = get_computer_choice()
 
-    print("The computer chose: " + comp_choice)
-    print("The user chose: " + user_choice)
-    print(user_choice + " vs " + comp_choice)
+        result = {
+            "computer_choice": comp_choice,
+            "user_choice": user_choice,
+            "winner": determine_winner(user_choice, comp_choice)
+        }
 
-    winner = determine_winner(user_choice, comp_choice)
-    print(winner)
+        return result
+    else:
+        return {"error": "Invalid choice"}
 
 if __name__ == "__main__":
-    main()
+    uvicorn.run(app, host="0.0.0.0", port=8000)
